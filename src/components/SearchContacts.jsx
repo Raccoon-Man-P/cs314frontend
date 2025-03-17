@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { searchContacts } from '../services/api'; // Import the searchContacts API function
-import { getAllContacts } from '../services/api'; // Import the new API call for all contacts
+import { searchContacts, getAllContacts } from '../services/api'; // Import the necessary API functions
 import './SearchContacts.css';
 
-const SearchContacts = () => {
+const SearchContacts = ({ onSelectContact }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [results, setResults] = useState([]);
     const [error, setError] = useState('');
@@ -19,9 +18,9 @@ const SearchContacts = () => {
 
         try {
             const data = await searchContacts(searchTerm);  // Pass the search term to the API
-            console.log('Search results:', data); // Log the results to check the response
+            console.log('Search results:', data);
 
-            setResults(data.contacts || []);  // Access the contacts array in the response
+            setResults(data.contacts || []);
             setError('');
             setIsAllContacts(false); // Set to false when search results are shown
         } catch (err) {
@@ -32,7 +31,7 @@ const SearchContacts = () => {
     const handleGetAllContacts = async () => {
         try {
             const data = await getAllContacts();  // Call the API to get all contacts
-            console.log('All contacts:', data); // Log the results to check the response
+            console.log('All contacts:', data);
 
             setResults(data.contacts || []);  // Update the results with all contacts
             setError('');
@@ -40,6 +39,11 @@ const SearchContacts = () => {
         } catch (err) {
             setError('Failed to load all contacts. Please try again.');
         }
+    };
+
+    // Handle selecting a contact
+    const handleSelectContact = (contact) => {
+        onSelectContact(contact); // Pass selected contact to the parent (MainPage)
     };
 
     return (
@@ -63,14 +67,11 @@ const SearchContacts = () => {
                 <div className="search-results">
                     <ul>
                         {results.map((user) => (
-                            <li key={user._id || user.value}> {/* Use _id or value as the key */}
-                                {isAllContacts ? ( // If displaying all contacts, show the label
-                                    user.label
-                                ) : ( // Otherwise, show detailed info for search results
-                                    <>
-                                        {user.firstName} {user.lastName} ({user.email})
-                                    </>
-                                )}
+                            <li
+                                key={user._id || user.value} // Use _id or value as the key
+                                onClick={() => handleSelectContact(user)} // Allow contact selection
+                            >
+                                {isAllContacts ? user.label : `${user.firstName} ${user.lastName} (${user.email})`}
                             </li>
                         ))}
                     </ul>

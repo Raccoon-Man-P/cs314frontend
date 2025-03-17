@@ -1,19 +1,21 @@
-// src/pages/MainPage.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserInfo, logoutUser, updateUserProfile } from '../services/api';
-import SearchContacts from '../components/SearchContacts'; // Import the SearchContacts component
+import SearchContacts from '../components/SearchContacts';
+import ChatWindow from '../components/ChatWindow';
 import '../components/MainPage.css';
 
 const MainPage = () => {
     const [userEmail, setUserEmail] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
-    const [color, setColor] = useState('#ffffff'); // Default color (white)
+    const [color, setColor] = useState('#ffffff');
+    const [userId, setUserId] = useState(''); // New state to store user ID
     const [showUpdateForm, setShowUpdateForm] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [selectedContact, setSelectedContact] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -23,7 +25,8 @@ const MainPage = () => {
                 setUserEmail(userData.email);
                 setFirstName(userData.firstName || '');
                 setLastName(userData.lastName || '');
-                setColor(userData.color || '#ffffff'); // Set the color if available
+                setColor(userData.color || '#ffffff');
+                setUserId(userData.id); // Store the logged-in user's ID
             } catch (err) {
                 setError('Failed to load user info. Please log in again.');
             } finally {
@@ -46,18 +49,15 @@ const MainPage = () => {
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
 
-        // Ensure first name and last name are provided
         if (!firstName || !lastName) {
             setError('First Name and Last Name are required.');
             return;
         }
 
         try {
-            // Call the API function to update the profile
             await updateUserProfile({ firstName, lastName, color });
-
             setSuccess('Profile updated successfully!');
-            setShowUpdateForm(false); // Hide form after successful update
+            setShowUpdateForm(false);
         } catch (err) {
             setError('Failed to update profile. Try again.');
         }
@@ -74,7 +74,6 @@ const MainPage = () => {
                     <h2>Welcome, {firstName} {lastName}!</h2>
                     <p>Email: {userEmail}</p>
 
-                    {/* Update Profile Button */}
                     {!showUpdateForm ? (
                         <button onClick={() => setShowUpdateForm(true)} className="update-btn">
                             Update User Profile
@@ -82,27 +81,13 @@ const MainPage = () => {
                     ) : (
                         <form onSubmit={handleUpdateProfile} className="update-form">
                             <label>First Name (required):</label>
-                            <input
-                                type="text"
-                                value={firstName}
-                                onChange={(e) => setFirstName(e.target.value)}
-                                required
-                            />
+                            <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
 
                             <label>Last Name (required):</label>
-                            <input
-                                type="text"
-                                value={lastName}
-                                onChange={(e) => setLastName(e.target.value)}
-                                required
-                            />
+                            <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
 
                             <label>Profile Color (optional):</label>
-                            <input
-                                type="color"
-                                value={color}
-                                onChange={(e) => setColor(e.target.value)}
-                            />
+                            <input type="color" value={color} onChange={(e) => setColor(e.target.value)} />
 
                             <button type="submit" className="save-btn">Save</button>
                             <button type="button" onClick={() => setShowUpdateForm(false)} className="cancel-btn">Cancel</button>
@@ -115,7 +100,12 @@ const MainPage = () => {
                     <button onClick={handleLogout} className="logout-btn">Logout</button>
                 </div>
             )}
-            <SearchContacts />
+
+            <SearchContacts onSelectContact={setSelectedContact} />
+
+            <div className="chat-container">
+                <ChatWindow selectedContact={selectedContact} userId={userId} />
+            </div>
         </div>
     );
 };

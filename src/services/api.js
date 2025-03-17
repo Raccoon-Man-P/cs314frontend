@@ -97,3 +97,24 @@ export const getAllContacts = async () => {
     }
 };
 
+export const getContactsForList = async () => {
+    try {
+        const response = await apiClient.get(`${SERVER_URL}/api/contacts/get-contacts-for-list`);
+        return response.data;
+    } catch (error) {
+        console.error('Error retrieving sorted contacts:', error);
+        throw error;
+    }
+};
+
+export const getMessages = async (contactorId) => {
+    try {
+        const response = await apiClient.post(`${SERVER_URL}/api/messages/get-messages`, { id: contactorId }, { withCredentials: true });
+        return response.data.messages;
+    } catch (error) {
+        console.error('Error fetching messages:', error.response?.data || error.message);
+        throw new Error(error.response?.data?.message || 'Failed to fetch messages');
+    }
+};
+
+
