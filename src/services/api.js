@@ -1,8 +1,6 @@
-// src/services/api.js
 import axios from 'axios';
 
-// Get the SERVER_URL from the .env file
-const SERVER_URL = import.meta.env.VITE_SERVER_URL; // assuming your .env uses VITE_ prefix
+const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
 const apiClient = axios.create({
     baseURL: SERVER_URL,
@@ -12,15 +10,12 @@ const apiClient = axios.create({
 // Helper function to handle errors
 const handleError = (error) => {
     if (error.response) {
-        // The request was made and the server responded with a status code
         console.error('Error response:', error.response.data);
         return Promise.reject(error.response.data);
     } else if (error.request) {
-        // The request was made but no response was received
         console.error('Error request:', error.request);
         return Promise.reject('No response from server');
     } else {
-        // Something happened in setting up the request that triggered an Error
         console.error('Error message:', error.message);
         return Promise.reject(error.message);
     }
@@ -82,12 +77,23 @@ export const searchContacts = async (searchTerm) => {
     try {
         const response = await apiClient.post(
             `${SERVER_URL}/api/contacts/search`,
-            { searchTerm },  // Send searchTerm in the request body
-            { withCredentials: true }  // Include credentials (cookies) if necessary
+            { searchTerm },  
+            { withCredentials: true }  
         );
-        return response.data;  // Return the search results
+        return response.data;  
     } catch (error) {
         console.error('Error searching contacts:', error);
-        throw error;  // Propagate the error to handle it in the component
+        throw error;  
     }
 };
+
+export const getAllContacts = async () => {
+    try {
+        const response = await apiClient.get(`${SERVER_URL}/api/contacts/all-contacts`);
+        return response.data;
+    } catch (error) {
+        console.error('Error retrieving contacts:', error);
+        throw error;
+    }
+};
+
