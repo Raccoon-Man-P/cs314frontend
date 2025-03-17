@@ -46,7 +46,7 @@ export const login = async (userData) => {
 
 export const logoutUser = async () => {
     try {
-        const response = await axios.post(`${SERVER_URL}/api/auth/logout`, { withCredentials: true });
+        const response = await apiClient.post(`${SERVER_URL}/api/auth/logout`, { withCredentials: true });
         return response.data;
     } catch (error) {
         console.error('Error logging out:', error);
@@ -64,15 +64,30 @@ export const getUserInfo = async () => {
     }
 };
 
-export const updateUserProfile = async ({ firstName, lastName, color }) => {
+export const updateUserProfile = async (requestData) => {
     try {
-        await axios.post(
+
+        await apiClient.post(
             `${SERVER_URL}/api/auth/update-profile`,
-            { firstName, lastName, color },
+            requestData,
             { withCredentials: true }
         );
     } catch (error) {
         console.error('Error updating profile:', error);
         throw error;
+    }
+};
+
+export const searchContacts = async (searchTerm) => {
+    try {
+        const response = await apiClient.post(
+            `${SERVER_URL}/api/contacts/search`,
+            { searchTerm },  // Send searchTerm in the request body
+            { withCredentials: true }  // Include credentials (cookies) if necessary
+        );
+        return response.data;  // Return the search results
+    } catch (error) {
+        console.error('Error searching contacts:', error);
+        throw error;  // Propagate the error to handle it in the component
     }
 };

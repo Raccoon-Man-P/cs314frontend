@@ -2,13 +2,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserInfo, logoutUser, updateUserProfile } from '../services/api';
+import SearchContacts from '../components/SearchContacts'; // Import the SearchContacts component
 import '../components/MainPage.css';
 
 const MainPage = () => {
     const [userEmail, setUserEmail] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
-    const [color, setColor] = useState('#ffffff');  // Default color (white)
+    const [color, setColor] = useState('#ffffff'); // Default color (white)
     const [showUpdateForm, setShowUpdateForm] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -22,7 +23,7 @@ const MainPage = () => {
                 setUserEmail(userData.email);
                 setFirstName(userData.firstName || '');
                 setLastName(userData.lastName || '');
-                setColor(userData.color || ''); // Set the color if available
+                setColor(userData.color || '#ffffff'); // Set the color if available
             } catch (err) {
                 setError('Failed to load user info. Please log in again.');
             } finally {
@@ -44,8 +45,17 @@ const MainPage = () => {
 
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
+
+        // Ensure first name and last name are provided
+        if (!firstName || !lastName) {
+            setError('First Name and Last Name are required.');
+            return;
+        }
+
         try {
+            // Call the API function to update the profile
             await updateUserProfile({ firstName, lastName, color });
+
             setSuccess('Profile updated successfully!');
             setShowUpdateForm(false); // Hide form after successful update
         } catch (err) {
@@ -60,8 +70,8 @@ const MainPage = () => {
             ) : error ? (
                 <p className="error-message">{error}</p>
             ) : (
-                        <div className="profile-card">
-                            <h2>Welcome, {firstName} {lastName}!</h2>
+                <div className="profile-card">
+                    <h2>Welcome, {firstName} {lastName}!</h2>
                     <p>Email: {userEmail}</p>
 
                     {/* Update Profile Button */}
@@ -71,7 +81,7 @@ const MainPage = () => {
                         </button>
                     ) : (
                         <form onSubmit={handleUpdateProfile} className="update-form">
-                            <label>First Name:</label>
+                            <label>First Name (required):</label>
                             <input
                                 type="text"
                                 value={firstName}
@@ -79,7 +89,7 @@ const MainPage = () => {
                                 required
                             />
 
-                            <label>Last Name:</label>
+                            <label>Last Name (required):</label>
                             <input
                                 type="text"
                                 value={lastName}
@@ -87,7 +97,7 @@ const MainPage = () => {
                                 required
                             />
 
-                            <label>Profile Color:</label>
+                            <label>Profile Color (optional):</label>
                             <input
                                 type="color"
                                 value={color}
@@ -105,6 +115,7 @@ const MainPage = () => {
                     <button onClick={handleLogout} className="logout-btn">Logout</button>
                 </div>
             )}
+            <SearchContacts />
         </div>
     );
 };
