@@ -1,8 +1,7 @@
 // src/pages/Login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../services/api'; // Import the login function
-//import './Login.css'; // You can create your custom styles here
+import { login } from '../services/api'; 
 
 function SignUpButton() {
     const navigate = useNavigate();
@@ -25,15 +24,13 @@ const Login = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        setError(''); // Clear previous errors
+        setError(''); 
 
         try {
             const userCredentials = { email, password };
             const response = await login(userCredentials);
 
-            // Assuming the response contains a JWT token or user data
             if (response) {
-                // Redirect user to the main page after successful login
                 navigate('/main');
             }
 

@@ -1,8 +1,7 @@
 // src/pages/Signup.js
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // Import Link for navigation
-import { signup } from '../services/api'; // Import the signup function
-//import './Signup.css'; // You can create your custom styles here
+import { useNavigate, Link } from 'react-router-dom'; 
+import { signup } from '../services/api'; 
 
 const Signup = () => {
     const [email, setEmail] = useState('');
@@ -13,9 +12,8 @@ const Signup = () => {
 
     const handleSignup = async (e) => {
         e.preventDefault();
-        setError(''); // Clear previous errors
+        setError(''); 
 
-        // Check if passwords match
         if (password !== confirmPassword) {
             setError('Passwords do not match!');
             return;
@@ -25,9 +23,7 @@ const Signup = () => {
             const userData = { email, password };
             const response = await signup(userData);
 
-            // Assuming the response contains a success message or user data
             if (response) {
-                // Redirect user to the login page after successful signup
                 navigate('/');
             }
         } catch (err) {
