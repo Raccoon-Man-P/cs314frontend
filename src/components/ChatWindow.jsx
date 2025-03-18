@@ -1,44 +1,54 @@
-import React, { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
-import { getMessages } from '../services/api'; // We're using this to get conversation history
-import '../components/ChatWindow.css';
-
-let socket = null;
-let myRole = "me"; // Default role
+import React, { useEffect, useState } from "react";
+import { io } from "socket.io-client";
+import { getMessages } from "../services/api"; // API call for message history
+import "../components/ChatWindow.css";
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
+let socket = null;
 
 const ChatWindow = ({ selectedContact, userId }) => {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [newMessage, setNewMessage] = useState('');
+    const [error, setError] = useState("");
+    const [newMessage, setNewMessage] = useState("");
 
-    // Initialize socket connection when userId is available
     useEffect(() => {
         if (!userId) return;
 
-        // Connect socket to the server
+        // Disconnect any existing socket instance before creating a new one
+        if (socket) {
+            socket.disconnect();
+        }
+
+        // Establish a new socket connection
         socket = io(SERVER_URL, {
             transports: ["websocket"],
-            query: { user: myRole },
+            query: { userId }, // Send userId to backend
         });
 
         socket.on("connect", () => {
-            console.log("Socket connected:", socket.id, "as:", myRole);
+            console.log("Socket connected:", socket.id);
+            socket.emit("joinRoom", userId); // Join the room with userId
         });
 
-        // Listen for incoming messages from the server
-        socket.on('receiveMessage', (message) => {
-            // Make sure the message is for the current user or the selected contact
-            if (message.receiverId === userId || message.senderId === userId) {
-                setMessages((prevMessages) => [...prevMessages, message]);
-            }
-            console.log('Message received:', message);
+        socket.on("receiveMessage", (message) => {
+            console.log("Message received:", message);
+
+            setMessages((prevMessages) => {
+                if (!prevMessages.some(msg => msg._id === message._id)) {
+                    return [...prevMessages, message];
+                }
+                return prevMessages;
+            });
         });
 
+
+
+        // Cleanup function
         return () => {
-            socket.off('receiveMessage');
+            console.log("Disconnecting socket...");
+            socket.off("receiveMessage");
+            socket.disconnect();
         };
     }, [userId]);
 
@@ -47,10 +57,9 @@ const ChatWindow = ({ selectedContact, userId }) => {
 
         const fetchMessages = async () => {
             setLoading(true);
-            setError('');
+            setError("");
             try {
-                // Fetch conversation history between the user and selectedContact
-                const messagesData = await getMessages(userId, selectedContact.id);
+                const messagesData = await getMessages(selectedContact._id);
                 setMessages(messagesData);
             } catch (err) {
                 setError(err.message);
@@ -62,36 +71,29 @@ const ChatWindow = ({ selectedContact, userId }) => {
         fetchMessages();
     }, [selectedContact, userId]);
 
-    // Send message using socket.emit
     const sendMessage = async () => {
-        if (!newMessage.trim()) return;
-
-        // Ensure a selected contact exists
-        if (!selectedContact) {
-            setError("Please select a contact to send the message.");
+        if (!newMessage.trim() || !selectedContact) {
+            setError("Please select a contact and type a message.");
             return;
         }
 
-        try {
-            // Create the message object
-            const messageData = {
-                senderId: userId, // Your userId
-                receiverId: selectedContact.id, // The selected contact's ID
-                text: newMessage,
-                timestamp: new Date().toISOString(),
-            };
+        const messageData = {
+            sender: userId,
+            recipient: selectedContact._id,
+            content: newMessage,
+            messageType: "text",
+        };
 
-            // Emit the message via Socket.IO
-            socket.emit('sendMessage', messageData);
+        console.log("Sending message:", messageData);
 
-            // Optionally, add the message to the UI immediately
-            setMessages((prevMessages) => [...prevMessages, messageData]);
-            setNewMessage('');
-        } catch (err) {
-            setError(err.message);
-            console.error('Error sending message:', err);
-        }
+        // Emit message via Socket.IO (server will handle broadcasting)
+        socket.emit("sendMessage", messageData);
+
+        // Clear input field (but don't add the message to state yet)
+        setNewMessage("");
     };
+
+
 
     return (
         <div className="chat-window">
@@ -108,8 +110,8 @@ const ChatWindow = ({ selectedContact, userId }) => {
                         <div className="messages-container">
                             {messages.length > 0 ? (
                                 messages.map((msg, index) => (
-                                    <div key={index} className={`message ${msg.senderId === selectedContact.id ? 'received' : 'sent'}`}>
-                                        <p>{msg.text}</p>
+                                    <div key={index} className={`message ${msg.sender === userId || msg.sender?._id === userId ? 'sent' : 'received'}`}>
+                                        <p>{msg.content}</p>
                                     </div>
                                 ))
                             ) : (

@@ -10,7 +10,7 @@ const MainPage = () => {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [color, setColor] = useState('#ffffff');
-    const [userId, setUserId] = useState(''); // New state to store user ID
+    const [userId, setUserId] = useState(''); 
     const [showUpdateForm, setShowUpdateForm] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -26,7 +26,8 @@ const MainPage = () => {
                 setFirstName(userData.firstName || '');
                 setLastName(userData.lastName || '');
                 setColor(userData.color || '#ffffff');
-                setUserId(userData.id); // Store the logged-in user's ID
+                setUserId(userData.id); 
+                console.log(JSON.stringify(userData, null, 2));
             } catch (err) {
                 setError('Failed to load user info. Please log in again.');
             } finally {
@@ -55,7 +56,7 @@ const MainPage = () => {
         }
 
         try {
-            await updateUserProfile({ firstName, lastName, color });
+            await updateUserProfile({ firstName, lastName });
             setSuccess('Profile updated successfully!');
             setShowUpdateForm(false);
         } catch (err) {

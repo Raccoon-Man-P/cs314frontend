@@ -109,12 +109,17 @@ export const getContactsForList = async () => {
 
 export const getMessages = async (contactorId) => {
     try {
-        const response = await apiClient.post(`${SERVER_URL}/api/messages/get-messages`, { id: contactorId }, { withCredentials: true });
+        const response = await apiClient.post(
+            `${SERVER_URL}/api/messages/get-messages`,
+            { id: contactorId },
+            { withCredentials: true }
+        );
         return response.data.messages;
     } catch (error) {
         console.error('Error fetching messages:', error.response?.data || error.message);
         throw new Error(error.response?.data?.message || 'Failed to fetch messages');
     }
 };
+
 
 
