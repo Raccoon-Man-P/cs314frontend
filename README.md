@@ -1,6 +1,5 @@
 Phillip Grazhdan
 CS 314
-graz@pdx.edu
 
 
 
