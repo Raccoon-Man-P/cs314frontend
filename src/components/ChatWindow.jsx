@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import { getMessages } from "../services/api"; // API call for message history
+import { getMessages, deleteDM } from "../services/api";
 import "../components/ChatWindow.css";
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
@@ -15,20 +15,18 @@ const ChatWindow = ({ selectedContact, userId }) => {
     useEffect(() => {
         if (!userId) return;
 
-        // Disconnect any existing socket instance before creating a new one
         if (socket) {
             socket.disconnect();
         }
 
-        // Establish a new socket connection
         socket = io(SERVER_URL, {
             transports: ["websocket"],
-            query: { userId }, // Send userId to backend
+            query: { userId }, 
         });
 
         socket.on("connect", () => {
             console.log("Socket connected:", socket.id);
-            socket.emit("joinRoom", userId); // Join the room with userId
+            socket.emit("joinRoom", userId); 
         });
 
         socket.on("receiveMessage", (message) => {
@@ -42,9 +40,6 @@ const ChatWindow = ({ selectedContact, userId }) => {
             });
         });
 
-
-
-        // Cleanup function
         return () => {
             console.log("Disconnecting socket...");
             socket.off("receiveMessage");
@@ -86,14 +81,20 @@ const ChatWindow = ({ selectedContact, userId }) => {
 
         console.log("Sending message:", messageData);
 
-        // Emit message via Socket.IO (server will handle broadcasting)
         socket.emit("sendMessage", messageData);
 
-        // Clear input field (but don't add the message to state yet)
         setNewMessage("");
     };
 
-
+    const deleteMessage = async (messageId) => {
+        console.log("Deleting message with ID:", messageId);
+        try {
+            await deleteDM(messageId);
+            setMessages((prevMessages) => prevMessages.filter(msg => msg._id !== messageId));
+        } catch (err) {
+            setError("Failed to delete message.");
+        }
+    };
 
     return (
         <div className="chat-window">
@@ -110,8 +111,14 @@ const ChatWindow = ({ selectedContact, userId }) => {
                         <div className="messages-container">
                             {messages.length > 0 ? (
                                 messages.map((msg, index) => (
-                                    <div key={index} className={`message ${msg.sender === userId || msg.sender?._id === userId ? 'sent' : 'received'}`}>
+                                    <div
+                                        key={index}
+                                        className={`message ${msg.sender._id === userId ? 'sent' : 'received'}`}
+                                    >
                                         <p>{msg.content}</p>
+                                        {msg.sender._id === userId && (
+                                            <button onClick={() => deleteMessage(msg._id)}>Delete</button>
+                                        )}
                                     </div>
                                 ))
                             ) : (

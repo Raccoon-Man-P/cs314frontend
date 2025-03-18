@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { searchContacts, getAllContacts } from '../services/api'; // Import the necessary API functions
+import { searchContacts, getAllContacts } from '../services/api'; 
 import './SearchContacts.css';
 
 const SearchContacts = ({ onSelectContact }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [results, setResults] = useState([]);
     const [error, setError] = useState('');
-    const [isAllContacts, setIsAllContacts] = useState(false); // Track if all contacts are displayed
+    const [isAllContacts, setIsAllContacts] = useState(false);
 
     const handleSearch = async (e) => {
         e.preventDefault();
@@ -17,12 +17,12 @@ const SearchContacts = ({ onSelectContact }) => {
         }
 
         try {
-            const data = await searchContacts(searchTerm);  // Pass the search term to the API
+            const data = await searchContacts(searchTerm);  
             console.log('Search results:', data);
 
             setResults(data.contacts || []);
             setError('');
-            setIsAllContacts(false); // Set to false when search results are shown
+            setIsAllContacts(false); 
         } catch (err) {
             setError('Failed to search for users. Please try again.');
         }
@@ -30,20 +30,19 @@ const SearchContacts = ({ onSelectContact }) => {
 
     const handleGetAllContacts = async () => {
         try {
-            const data = await getAllContacts();  // Call the API to get all contacts
+            const data = await getAllContacts(); 
             console.log('All contacts:', data);
 
-            setResults(data.contacts || []);  // Update the results with all contacts
+            setResults(data.contacts || []); 
             setError('');
-            setIsAllContacts(true); // Set to true when displaying all contacts
+            setIsAllContacts(true); 
         } catch (err) {
             setError('Failed to load all contacts. Please try again.');
         }
     };
 
-    // Handle selecting a contact
     const handleSelectContact = (contact) => {
-        onSelectContact(contact); // Pass selected contact to the parent (MainPage)
+        onSelectContact(contact); 
     };
 
     return (
@@ -62,14 +61,13 @@ const SearchContacts = ({ onSelectContact }) => {
 
             {error && <p className="error-message">{error}</p>}
 
-            {/* Display results in a list below the search bar */}
             {results.length > 0 && (
                 <div className="search-results">
                     <ul>
                         {results.map((user) => (
                             <li
-                                key={user._id || user.value} // Use _id or value as the key
-                                onClick={() => handleSelectContact(user)} // Allow contact selection
+                                key={user._id || user.value} 
+                                onClick={() => handleSelectContact(user)} 
                             >
                                 {isAllContacts ? user.label : `${user.firstName} ${user.lastName} (${user.email})`}
                             </li>
@@ -78,7 +76,6 @@ const SearchContacts = ({ onSelectContact }) => {
                 </div>
             )}
 
-            {/* Show message if no results found */}
             {results.length === 0 && searchTerm && !isAllContacts && (
                 <p>No results found for "{searchTerm}"</p>
             )}

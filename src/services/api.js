@@ -121,5 +121,12 @@ export const getMessages = async (contactorId) => {
     }
 };
 
-
+export const deleteDM = async (dmId) => {
+    try {
+        const response = await apiClient.delete(`${SERVER_URL}/api/contacts/delete-dm/${dmId}`);
+        return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || "Failed to delete DM.");
+    }
+};
 
